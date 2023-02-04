@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      #form {
+        width: 600px;
+        margin: 0 auto;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
+      #input {
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
+      #input:focus {
+        outline: none;
+      }
+      #form > button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+      }
+
+      #messages {
+        border-right: 2px solid #efefef;
+        border-left: 2px solid #efefef;
+        width: 600px;
+        height: 92vh;
+        margin: 0 auto;
+        list-style-type: none;
+        padding: 0;
+        overflow-y: auto;
+      }
+      #messages > div {
+        padding: 0.5rem 1rem;
+        width: min-content;
+      }
+
+      .received {
+        color: blue;
+      }
+
+      .sended {
+        margin-left: auto;
+      }
+
+      #information {
+        width: 604px;
+        margin: 0 auto;
+        background-color: #efefef;
+        padding: 5px 10px;
+        box-sizing: border-box;
+      }
+
+      #information p {
+        margin: 0 10px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="information">
+      <p><b id="count">0</b> User Connected</p>
+      <p>Your Socket ID: <b id="id">0.0.0.0</b></p>
+    </div>
+    <div id="messages"></div>
+    <form id="form" action="">
+      <input id="input" autocomplete="off" /><button>Send</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script type="module">
+      var socket = io();
+
+      var messages = document.getElementById("messages");
+      var form = document.getElementById("form");
+      var input = document.getElementById("input");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (input.value) {
+          socket.emit("message", { id: socket.id, message: input.value });
+          input.value = "";
+        }
+      });
+
+      socket.on("message", function (msg) {
+        var item = document.createElement("div");
+        item.textContent = msg.message;
+
+        if (msg.id === socket.id) {
+          item.classList.add("sended");
+        } else {
+          item.classList.add("received");
+        }
+        messages.appendChild(item);
+      });
+
+      socket.on("connect", () => {
+        document.querySelector("#id").textContent = socket.id;
+      });
+
+      socket.on("count", (count) => {
+        document.querySelector("#count").textContent = count;
+      });
+    </script>
+  </body>
+</html>
